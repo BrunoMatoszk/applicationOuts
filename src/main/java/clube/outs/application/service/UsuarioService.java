@@ -1,12 +1,15 @@
 package clube.outs.application.service;
 
+import clube.outs.application.dto.Endereco;
 import clube.outs.application.dto.UsuarioRequest;
 import clube.outs.application.dto.UsuarioResponse;
-import clube.outs.application.dto.ViaCepResponse;
 import clube.outs.application.entity.Usuario;
 import clube.outs.application.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,24 +24,6 @@ public class UsuarioService {
 
     @Autowired
     private ViaCepService viaCepService;
-
-    public Usuario salvarEnderecoNoUsuario(Integer usuarioId, String cep) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        ViaCepResponse response = viaCepService.obterEnderecoPorCep(cep);
-        usuario.setLogradouro(response.getLogradouro());
-        usuario.setBairro(response.getBairro());
-        usuario.setLocalidade(response.getLocalidade());
-        usuario.setUf(response.getUf());
-
-        return usuarioRepository.save(usuario);
-    }
-
-
-    public List<Usuario> listarUsuariosOrdenadosPorUf() {
-        return usuarioRepository.findAllByOrderByUfAsc();
-    }
 
     public List<UsuarioResponse> listarUsuarios() {
         return usuarioRepository.findAll().stream()
@@ -58,17 +43,9 @@ public class UsuarioService {
         // Instanciar o objeto Usuario com os dados do DTO (exceto o endereço)
         Usuario usuario = new Usuario(novoUsuario);
 
-        // Chama a API ViaCEP para buscar o endereço baseado no CEP
-        ViaCepResponse response = viaCepService.obterEnderecoPorCep(cep);
-        usuario.setLogradouro(response.getLogradouro());
-        usuario.setBairro(response.getBairro());
-        usuario.setLocalidade(response.getLocalidade());
-        usuario.setUf(response.getUf());
-
         // Salvar o usuário no banco de dados e retornar a resposta
         return new UsuarioResponse(usuarioRepository.save(usuario));
     }
-
 
 
     public UsuarioResponse buscarUsuarioPorId(int id) {

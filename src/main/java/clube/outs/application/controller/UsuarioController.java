@@ -1,5 +1,6 @@
 package clube.outs.application.controller;
 
+import clube.outs.application.dto.Endereco;
 import clube.outs.application.dto.UsuarioRequest;
 import clube.outs.application.dto.UsuarioResponse;
 import clube.outs.application.entity.Usuario;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -23,15 +25,17 @@ public class UsuarioController {
     @Autowired
     private ViaCepService viaCepService;
 
+    @GetMapping("/enderecos-por-localidade")
+    public ResponseEntity<List<Endereco>> getEnderecosPorLocalidade(
+            @RequestParam String uf,
+            @RequestParam String localidade,
+            @RequestParam String logradouro) {
 
-    @PostMapping("/{id}/endereco")
-    public Usuario salvarEndereco(@PathVariable Integer id, @RequestParam String cep) {
-        return usuarioService.salvarEnderecoNoUsuario(id, cep);
-    }
+        List<Endereco> enderecos = viaCepService.buscarEnderecosPorLocalidade(uf, localidade, logradouro);
 
-    @GetMapping("/ordenados")
-    public List<Usuario> listarUsuariosOrdenadosPorUf() {
-        return usuarioService.listarUsuariosOrdenadosPorUf();
+        viaCepService.ordenarPorLogradouro(enderecos);
+
+        return ResponseEntity.ok(enderecos);
     }
 
     @GetMapping
